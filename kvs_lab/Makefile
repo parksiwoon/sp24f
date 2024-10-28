@@ -1,6 +1,7 @@
+#정적 및 동적 라이브러리를 각각 빌드할 수 있도록 구성
 SRCS = main.c
-LIBSRCS = open.c close.c put.c get.c 
-TARG = kvs_static
+LIBSRCS = open.c close.c put.c get.c
+TARG_STATIC = kvs_static
 TARG_DYNAMIC = kvs_dynamic
 
 CC = gcc
@@ -10,25 +11,28 @@ LIBS = -L. -lkvs
 OBJS = $(SRCS:.c=.o)
 LOBJS = $(LIBSRCS:.c=.o)
 LARS = libkvs.a
+LSO = libkvs.so
 
+all: static dynamic
 
-all: 
+static: $(TARG_STATIC)
 
-static: $(TARG)
+$(TARG_STATIC): $(OBJS) $(LARS)
+	$(CC) -o $(TARG_STATIC) $(OBJS) $(LIBS) -static
 
-$(TARG) : $(OBJS) $(LARS)
-	$(CC) -o $(TARG) $(OBJS) $(LIBS) -static
-
-$(LARS) : $(LOBJS)
+$(LARS): $(LOBJS)
 	ar rs $(LARS) $(LOBJS)
+
+dynamic: $(TARG_DYNAMIC)
+
+$(TARG_DYNAMIC): $(OBJS) $(LSO)
+	$(CC) -o $(TARG_DYNAMIC) $(OBJS) $(LIBS)
+
+$(LSO): $(LIBSRCS)
+	$(CC) -shared -o $(LSO) $(LIBSRCS)
 
 %.o: %.c
 	$(CC) $(OPTS) -c $< -o $@
 
-dynamic: $(TARG_DYNAMIC)
-	$(CC) -o $(TARG) $(OBJS) $(LIBS) 
-
 clean:
-	rm -f $(OBJS) $(LOBJS) $(LARS) $(TARG)
-
-
+	rm -f $(OBJS) $(LOBJS) $(LARS) $(LSO) $(TARG_STATIC) $(TARG_DYNAMIC)
