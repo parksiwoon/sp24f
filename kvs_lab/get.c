@@ -2,23 +2,30 @@
 #include "kvs.h"
 
 char* get(kvs_t* kvs, const char* key){
-    node_t *current = kvs->header;
-
-    for (int i = kvs->level; i >= 0; i--) {
-        while (current->forward[i] != NULL && strcmp(current->forward[i]->key, key) < 0) {
-            current = current->forward[i];
-        }
+    // 빈 데이터베이스인 경우
+    if (kvs->db == NULL) {
+        printf("Key not found: %s\n", key);
+        return NULL;
     }
-    current = current->forward[0];
 
-    if (current != NULL && strcmp(current->key, key) == 0) {
-        char *value = strdup(current->value);
-        if (!value) {
-            printf("Failed to allocate memory for value\n");
-            return NULL;
+    // 데이터베이스를 처음부터 끝까지 탐색
+    node_t* current = kvs->db;
+    while (current != NULL) {
+        // 키를 찾았을 경우
+        if (strcmp(current->key, key) == 0) {
+            // 값을 복제하여 반환
+            char* value = strdup(current->value);
+            if (value == NULL) {
+                fprintf(stderr, "Failed to strdup\n");
+                return NULL;
+            }
+            return value;
         }
-        return value;
+        current = current->next;
     }
+
+    // 키를 찾지 못한 경우
+    printf("Key not found: %s\n", key);
     return NULL;
 }
 

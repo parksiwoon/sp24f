@@ -1,54 +1,46 @@
-//설명: query.dat 파일을 읽고, put 또는 get 작업을 수행한 뒤 결과를 answer.dat에 저장
 #include "kvs.h"
 
-int main()
-{
+int main() {
     kvs_t* kvs = open();
 
-    if (!kvs) return -1;
-
-    FILE *query = fopen("query.dat", "r");
-    FILE *answer = fopen("answer.dat", "w");
-    if (!query || !answer) {
-        printf("Failed to open file\n");
+    if (!kvs) {
+        printf("Failed to open kvs\n");
         return -1;
     }
 
+    FILE* fp1 = fopen("query.dat", "r");
+    FILE* fp2 = fopen("answer.dat", "w");
+
     char line[256];
-    char operation[10], key[100], value[100];
-    while (fgets(line, sizeof(line), query)) {
-        // 개행 문자 제거
+    while (fgets(line, sizeof(line), fp1) != NULL) {
         line[strcspn(line, "\n")] = '\0';
 
-        // 라인 파싱
-        int num_tokens = sscanf(line, "%[^,],%[^,],%s", operation, key, value);
-        if (num_tokens != 3) {
-            printf("Failed to parse line: %s\n", line);
-            continue;
-        }
+        char* command = strtok(line, ",");
+        char* key = strtok(NULL, ",");
+        char* value = strtok(NULL, ",");
 
-        if (strcmp(operation, "get") == 0) {
-            char *result = get(kvs, key);
-            if (result) {
-                fprintf(answer, "%s\n", result);
-                free(result);
+        if (command != NULL && key != NULL) {
+            //"GET" 명령어일 경우
+            if (strcmp(command, "get") == 0) {
+                char* result = get(kvs, key);
+                if (result != NULL) {
+                    printf("Get: %s = %s\n", key, result);
+                    fprintf(fp2, "%s\n", result); // answer.dat 파일에 쓰기
+                } else {
+                    printf("Key not found: %s\n", key);
+                }
+            } else if (strcmp(command, "set") == 0 && value != NULL) {
+                set(kvs, key, value);
+                printf("Set: %s = %s\n", key, value);
             } else {
-                fprintf(answer, "-1\n");
+                printf("Invalid command: %s\n", command);
             }
-        }
-        // set 연산을 무시합니다.
-        else if (strcmp(operation, "set") == 0) {
-            // set 연산을 처리하지 않으므로 아무 작업도 하지 않습니다.
-            // put(kvs, key, value);  // 주석 처리 또는 삭제
-        } else {
-            printf("Unknown operation: %s\n", operation);
         }
     }
 
-    fclose(query);
-    fclose(answer);
+    fclose(fp1);
+    fclose(fp2);
     close(kvs);
 
     return 0;
 }
-

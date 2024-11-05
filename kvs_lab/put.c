@@ -1,65 +1,42 @@
 #include "kvs.h"
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
 
-int random_level() {
-    int level = 0;
-    while (rand() % 2 && level < MAX_LEVEL - 1) {
-        level++;
-    }
-    return level;
-}
-
-int put(kvs_t* kvs, const char* key, const char* value)
+int set(kvs_t* kvs, const char* key, const char* value)
 {
-    //printf("put: %s, %s\n", key, value);
+    printf("set: %s, %s\n", key, value);
 
-    node_t *update[MAX_LEVEL];
-    node_t *current = kvs->header;
-
-    for (int i = kvs->level; i >= 0; i--) {
-        while (current->forward[i] != NULL && strcmp(current->forward[i]->key, key) < 0) {
-            current = current->forward[i];
-        }
-        update[i] = current;
+    // 새로운 노드 생성 및 초기화
+    node_t* new_node = (node_t*)malloc(sizeof(node_t));
+    if (!new_node) {
+        fprintf(stderr, "Failed to allocate memory for node\n");
+        return -1;
     }
 
-    current = current->forward[0];
-    if (current != NULL && strcmp(current->key, key) == 0) {
-        free(current->value);
-        current->value = strdup(value);
+    strcpy(new_node->key, key);
+    new_node->value = strdup(value); // 값을 동적으로 할당하고 복제
+    new_node->next = NULL;
+
+    // 데이터베이스가 비어 있는 경우
+    if (kvs->db == NULL) {
+        kvs->db = new_node;
     } else {
-        int level = random_level();
-        if (level > kvs->level) {
-            for (int i = kvs->level + 1; i <= level; i++) {
-                update[i] = kvs->header;
+        // 데이터베이스가 비어 있지 않은 경우
+        // 주어진 key를 찾아서 해당하는 노드의 value를 변경
+        node_t* current = kvs->db;
+        while (current->next != NULL) {
+            if (strcmp(current->key, key) == 0) {
+                free(current->value); // 기존 값 메모리 해제
+                current->value = strdup(value); // 새로운 값으로 복제
+                free(new_node); // 새로 생성한 노드 메모리 해제
+                return 0;
             }
-            kvs->level = level;
+            current = current->next;
         }
 
-        current = (node_t *)malloc(sizeof(node_t));
-        if (!current) {
-            printf("Failed to allocate memory for node\n");
-            return -1;
-        }
-        strcpy(current->key, key);
-        current->value = strdup(value);
-        if (!current->value) {
-            printf("Failed to allocate memory for value\n");
-            free(current);
-            return -1;
-        }
-        current->forward = (node_t **)malloc(sizeof(node_t *) * (level + 1));
-        if (!current->forward) {
-            printf("Failed to allocate memory for forward pointers\n");
-            free(current->value);
-            free(current);
-            return -1;
-        }
-
-        for (int i = 0; i <= level; i++) {
-            current->forward[i] = update[i]->forward[i];
-            update[i]->forward[i] = current;
-        }
-        kvs->items++;
+        // 주어진 key를 찾지 못한 경우, 새로운 노드를 데이터베이스에 추가
+        current->next = new_node;
     }
 
     return 0;
