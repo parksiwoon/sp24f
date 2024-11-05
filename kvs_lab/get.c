@@ -2,7 +2,7 @@
 #include "kvs.h"
 
 char* get(kvs_t* kvs, const char* key){
-	node_t *current = kvs->header;
+    node_t *current = kvs->header;
 
     for (int i = kvs->level; i >= 0; i--) {
         while (current->forward[i] != NULL && strcmp(current->forward[i]->key, key) < 0) {
@@ -10,23 +10,18 @@ char* get(kvs_t* kvs, const char* key){
         }
     }
     current = current->forward[0];
-    
-    if (current != NULL && strcmp(current->key, key) == 0) {
-        // 동적으로 메모리를 할당하고 값을 복사해 반환
-        char *value = (char*)malloc(sizeof(char) * (strlen(current->value) + 1));
-			//char* value = (char*)malloc(sizeof(char)*100);
-		if(!value){
-			printf("Failed to malloc\n");
-			return NULL;
-		}
 
-		//strcpy(value, "deadbeaf");
-		strcpy(value, current->value);//실제 key-value 데이터베이스에서 값을 검색하는 기능으로 구현
-		return value;
-	}
-	// 찾지 못했을 경우 NULL 반환
+    if (current != NULL && strcmp(current->key, key) == 0) {
+        char *value = strdup(current->value);
+        if (!value) {
+            printf("Failed to allocate memory for value\n");
+            return NULL;
+        }
+        return value;
+    }
     return NULL;
 }
+
 
 
 

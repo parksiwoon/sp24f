@@ -1,3 +1,4 @@
+//설명: kvs.h 파일에서 Skip List 구조를 사용할 수 있도록 node_t 구조체를 확장합니다. 각 노드가 여러 레벨의 포인터를 가질 수 있도록 level을 추가
 #include<stdio.h>
 #include<string.h>
 #include<stdlib.h>

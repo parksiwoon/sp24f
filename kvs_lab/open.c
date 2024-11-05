@@ -3,27 +3,33 @@
 
 kvs_t* open()
 {
-	kvs_t* kvs = (kvs_t*) malloc (sizeof(kvs_t));
+    kvs_t* kvs = (kvs_t*) malloc (sizeof(kvs_t));
 
-	if (!kvs) {
+    if (!kvs) {
         printf("Failed to open kvs\n");
         return NULL;
     }
     kvs->header = (node_t *)malloc(sizeof(node_t));
+    if (!kvs->header) {
+        printf("Failed to allocate memory for header\n");
+        free(kvs);
+        return NULL;
+    }
     kvs->header->forward = (node_t **)malloc(sizeof(node_t *) * MAX_LEVEL);
+    if (!kvs->header->forward) {
+        printf("Failed to allocate memory for forward pointers\n");
+        free(kvs->header);
+        free(kvs);
+        return NULL;
+    }
     for (int i = 0; i < MAX_LEVEL; i++) {
         kvs->header->forward[i] = NULL;
     }
 
-/** 
-	if(kvs)
-		kvs->items = 0;
-	printf("Open: kvs has %d items\n", kvs->items);
-*/
-	kvs->header->level = 0;
     kvs->level = 0;
     kvs->items = 0;
     printf("Open: kvs has %d items\n", kvs->items);
 
-	return kvs;
+    return kvs;
 }
+
