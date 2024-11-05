@@ -10,7 +10,7 @@ int random_level() {
 
 int put(kvs_t* kvs, const char* key, const char* value)
 {
-    printf("put: %s, %s\n", key, value);
+    //printf("put: %s, %s\n", key, value);
 
     node_t *update[MAX_LEVEL];
     node_t *current = kvs->header;
