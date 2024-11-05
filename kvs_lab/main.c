@@ -3,9 +3,9 @@
 
 int main()
 {
-	kvs_t* kvs = open();
+    kvs_t* kvs = open();
 
-	if (!kvs) return -1;
+    if (!kvs) return -1;
 
     FILE *query = fopen("query.dat", "r");
     FILE *answer = fopen("answer.dat", "w");
@@ -14,12 +14,21 @@ int main()
         return -1;
     }
 
+    char line[256];
     char operation[10], key[100], value[100];
-    while (fscanf(query, "%[^,],%[^,],%s", operation, key, value) != EOF) {
-        if (strcmp(operation, "put") == 0) {
-            // put 연산은 없으므로 무시
-        } else if (strcmp(operation, "set") == 0) {
-            // set 연산을 무시하여 키-값을 저장하지 않음
+    while (fgets(line, sizeof(line), query)) {
+        // 개행 문자 제거
+        line[strcspn(line, "\n")] = '\0';
+
+        // 라인 파싱
+        int num_tokens = sscanf(line, "%[^,],%[^,],%s", operation, key, value);
+        if (num_tokens != 3) {
+            printf("Failed to parse line: %s\n", line);
+            continue;
+        }
+
+        if (strcmp(operation, "set") == 0) {
+            put(kvs, key, value);
         } else if (strcmp(operation, "get") == 0) {
             char *result = get(kvs, key);
             if (result) {
@@ -28,26 +37,14 @@ int main()
             } else {
                 fprintf(answer, "-1\n");
             }
+        } else {
+            printf("Unknown operation: %s\n", operation);
         }
     }
 
-	/** 
-	if(!kvs) {
-		printf("Failed to open kvs\n");
-		return -1;
-	}
-	*/
-
-	// workload execution  
-	
-	// 1) 	file read 
-	// 2) 	if put, insert (key, value) into kvs.
-	// 		if get, seach the key in kvs and return the value. 
-	//		Return -1 if the key is not found  
-
-	fclose(query);
+    fclose(query);
     fclose(answer);
-	close(kvs);
-	
-	return 0;
+    close(kvs);
+
+    return 0;
 }
