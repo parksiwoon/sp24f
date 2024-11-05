@@ -3,9 +3,9 @@
 #include <stdlib.h>
 #include <string.h>
 
-int set(kvs_t* kvs, const char* key, const char* value)
+int put(kvs_t* kvs, const char* key, const char* value)
 {
-    printf("set: %s, %s\n", key, value);
+    printf("put: %s, %s\n", key, value);
 
     // 새로운 노드 생성 및 초기화
     node_t* new_node = (node_t*)malloc(sizeof(node_t));

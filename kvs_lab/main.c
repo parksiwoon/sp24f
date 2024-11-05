@@ -30,8 +30,8 @@ int main() {
                     printf("Key not found: %s\n", key);
                 }
             } else if (strcmp(command, "set") == 0 && value != NULL) {
-                set(kvs, key, value);
-                printf("Set: %s = %s\n", key, value);
+                put(kvs, key, value);
+                printf("put: %s = %s\n", key, value);
             } else {
                 printf("Invalid command: %s\n", command);
             }
