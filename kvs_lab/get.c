@@ -1,33 +1,20 @@
 //설명: get 함수는 Skip List에서 해당 key를 검색하고, 있으면 value를 반환
 #include "kvs.h"
 
-char* get(kvs_t* kvs, const char* key){
-    // 빈 데이터베이스인 경우
-    if (kvs->db == NULL) {
-        printf("Key not found: %s\n", key);
-        return NULL;
-    }
-
-    // 데이터베이스를 처음부터 끝까지 탐색
-    node_t* current = kvs->db;
-    while (current != NULL) {
-        // 키를 찾았을 경우
-        if (strcmp(current->key, key) == 0) {
-            // 값을 복제하여 반환
-            char* value = strdup(current->value);
-            if (value == NULL) {
-                fprintf(stderr, "Failed to strdup\n");
-                return NULL;
-            }
-            return value;
+char* get(kvs_t* kvs, const char* key) {
+    node_t* x = kvs->header;
+    for (int i = kvs->level - 1; i >= 0; i--) {
+        while (x->forward[i] != NULL && strcmp(x->forward[i]->key, key) < 0) {
+            x = x->forward[i];
         }
-        current = current->next;
     }
-
-    // 키를 찾지 못한 경우
-    printf("Key not found: %s\n", key);
+    x = x->forward[0];
+    if (x != NULL && strcmp(x->key, key) == 0) {
+        return strdup(x->value);
+    }
     return NULL;
 }
+
 
 
 
