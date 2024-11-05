@@ -2,45 +2,25 @@
 
 int main() {
     kvs_t* kvs = open();
+    FILE *queryFile = fopen("query.dat", "r");
+    FILE *answerFile = fopen("answer.dat", "w");
+    char operation[10], key[100], value[100];
 
-    if (!kvs) {
-        printf("Failed to open kvs\n");
-        return -1;
-    }
-
-    FILE* fp1 = fopen("query.dat", "r");
-    FILE* fp2 = fopen("answer.dat", "w");
-
-    char line[256];
-    while (fgets(line, sizeof(line), fp1) != NULL) {
-        line[strcspn(line, "\n")] = '\0';
-
-        char* command = strtok(line, ",");
-        char* key = strtok(NULL, ",");
-        char* value = strtok(NULL, ",");
-
-        if (command != NULL && key != NULL) {
-            //"GET" 명령어일 경우
-            if (strcmp(command, "get") == 0) {
-                char* result = get(kvs, key);
-                if (result != NULL) {
-                    printf("Get: %s = %s\n", key, result);
-                    fprintf(fp2, "%s\n", result); // answer.dat 파일에 쓰기
-                } else {
-                    printf("Key not found: %s\n", key);
-                }
-            } else if (strcmp(command, "set") == 0 && value != NULL) {
-                put(kvs, key, value);
-                printf("put: %s = %s\n", key, value);
+    while (fscanf(queryFile, "%[^,],%[^,],%[^\n]\n", operation, key, value) != EOF) {
+        if (strcmp(operation, "get") == 0) {
+            char *result = get(kvs, key);
+            if (result) {
+                fprintf(answerFile, "%s\n", result);
+                free(result);
             } else {
-                printf("Invalid command: %s\n", command);
+                fprintf(answerFile, "-1\n");
             }
+        } else if (strcmp(operation, "set") == 0) {
+            put(kvs, key, value);
         }
     }
-
-    fclose(fp1);
-    fclose(fp2);
+    fclose(queryFile);
+    fclose(answerFile);
     close(kvs);
-
     return 0;
 }
