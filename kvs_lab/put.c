@@ -1,9 +1,8 @@
-//설명: put 함수는 Skip List에 (key, value) 쌍을 삽입
 #include "kvs.h"
 
 int random_level() {
-    int level = 1;
-    while (rand() % 2 && level < MAX_LEVEL) {
+    int level = 0;
+    while (rand() % 2 && level < MAX_LEVEL - 1) {
         level++;
     }
     return level;
@@ -11,10 +10,9 @@ int random_level() {
 
 int put(kvs_t* kvs, const char* key, const char* value)
 {
-	printf("put: %s, %s\n", key, value);
+    printf("put: %s, %s\n", key, value);
 
-	/* do program here */
-	 node_t *update[MAX_LEVEL];
+    node_t *update[MAX_LEVEL];
     node_t *current = kvs->header;
 
     for (int i = kvs->level; i >= 0; i--) {
@@ -31,23 +29,38 @@ int put(kvs_t* kvs, const char* key, const char* value)
     } else {
         int level = random_level();
         if (level > kvs->level) {
-            for (int i = kvs->level + 1; i < level; i++) {
+            for (int i = kvs->level + 1; i <= level; i++) {
                 update[i] = kvs->header;
             }
             kvs->level = level;
         }
 
         current = (node_t *)malloc(sizeof(node_t));
+        if (!current) {
+            printf("Failed to allocate memory for node\n");
+            return -1;
+        }
         strcpy(current->key, key);
         current->value = strdup(value);
-        current->forward = (node_t **)malloc(sizeof(node_t *) * level);
+        if (!current->value) {
+            printf("Failed to allocate memory for value\n");
+            free(current);
+            return -1;
+        }
+        current->forward = (node_t **)malloc(sizeof(node_t *) * (level + 1));
+        if (!current->forward) {
+            printf("Failed to allocate memory for forward pointers\n");
+            free(current->value);
+            free(current);
+            return -1;
+        }
 
-        for (int i = 0; i < level; i++) {
+        for (int i = 0; i <= level; i++) {
             current->forward[i] = update[i]->forward[i];
             update[i]->forward[i] = current;
         }
         kvs->items++;
     }
-	
-	return 0;
+
+    return 0;
 }
