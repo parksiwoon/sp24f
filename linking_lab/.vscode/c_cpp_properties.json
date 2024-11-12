@@ -1,0 +1,18 @@
+{
+    "configurations": [
+      {
+        "name": "Linux",
+        "includePath": [
+          "${workspaceFolder}/**",
+          "${workspaceFolder}/leveldb/include"  // LevelDB 헤더 경로 추가
+        ],
+        "defines": [],
+        "compilerPath": "/usr/bin/g++",  // Linux에서 기본 G++ 경로
+        "cStandard": "c11",
+        "cppStandard": "c++17",
+        "intelliSenseMode": "linux-gcc-x64"
+      }
+    ],
+    "version": 4
+  }
+  
