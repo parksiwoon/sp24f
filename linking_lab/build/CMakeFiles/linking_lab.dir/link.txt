@@ -1,0 +1,1 @@
+/usr/bin/c++   -g -g   CMakeFiles/linking_lab.dir/main.cpp.o  -o linking_lab   -L/home/student17/linking_lab/leveldb/build  -Wl,-rpath,/home/student17/linking_lab/leveldb/build -lleveldb -lsnappy -lpthread 
